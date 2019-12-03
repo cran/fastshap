@@ -63,7 +63,7 @@ Compute fast (approximate) Shapley values for a set of features.
 # A projection pursuit regression (PPR) example
 #
 
-# Load the sample data; ?datasets::mtcars for details
+# Load the sample data; see ?datasets::mtcars for details
 data(mtcars)
 
 # Fit a projection pursuit regression model

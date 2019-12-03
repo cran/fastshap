@@ -70,7 +70,7 @@
 #' # A projection pursuit regression (PPR) example
 #' #
 #' 
-#' # Load the sample data; ?datasets::mtcars for details
+#' # Load the sample data; see ?datasets::mtcars for details
 #' data(mtcars)
 #' 
 #' # Fit a projection pursuit regression model
@@ -92,7 +92,7 @@ autoplot.explain <- function(
   type = c("importance", "dependence", "contribution"),
   feature = NULL, 
   num_features = NULL,
-  X, 
+  X = NULL, 
   color_by = NULL, 
   smooth = FALSE, 
   smooth_color = "red", 
@@ -135,6 +135,13 @@ autoplot.explain <- function(
       ylab("mean(|Shapley value|)")
     
   } else if (type == "dependence") {
+    
+    # Check for X
+    if (is.null(X)) {
+      stop("The training set is required for SHAP-dependence plots. Please",
+           " specify it via the `X` argument in the call to `autoplot()`.",
+           call. = FALSE)
+    }
     
     # Construct data to plot
     if (is.null(feature)) {
