@@ -1,7 +1,16 @@
+# Exits
+if (!requireNamespace("earth", quietly = TRUE)) {
+  exit_file("Package earth missing")
+}
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  exit_file("Package ggplot2 missing")
+}
+
 # Load required packages
-library(earth)    # for fitting MARS models
-library(ggplot2)  # for autoplot() generic
-library(mlbench)  # for ML benchmark data sets
+suppressMessages({
+  # library(earth)
+  library(ggplot2)
+})
 
 # Check C++ function
 num_rows <- 100000
@@ -14,12 +23,11 @@ expect_true(
 )
 
 # Generate training data from the Friedman 1 benchmark problem
-set.seed(101)  # for reproducibility
-trn <- as.data.frame(mlbench.friedman1(500))
+trn <- gen_friedman(500, seed = 101)
 X <- subset(trn, select = -y)
 
-# Fit a MARS model to the simulated Friedman benchmark data
-mars <- earth(y ~ ., data = trn, degree = 2)
+# Fit a fit model to the simulated Friedman benchmark data
+fit <- earth::earth(y ~ ., data = trn, degree = 2)
 
 # Prediction wrapper
 pfun <- function(object, newdata) {
@@ -28,7 +36,20 @@ pfun <- function(object, newdata) {
 
 # Generate approximate Shapley values for entire training set
 set.seed(102)  # for reproducibility
-shap_all <- explain(mars, X = X, pred_wrapper = pfun, nsim = 1)
+shap_all <- explain(fit, X = X, pred_wrapper = pfun, nsim = 1)
+
+# Check argument types
+expect_error(
+  explain(fit, X = X, pred_wrapper = pfun, newdata = data.matrix(X[1L, ]))
+)
+
+# Missing arguments
+expect_error(  # Argument `X` is missing
+  explain(fit, pred_wrapper = pfun, newdata = data.matrix(X[1L, ]))
+)
+expect_error(  # Argument `pred_wrapper` is missing
+  explain(fit, X = X, newdata = data.matrix(X[1L, ]))
+)
 
 # Check dimensions
 expect_identical(
@@ -57,7 +78,7 @@ expect_identical(
 
 # Generate approximate Shapley values for a single row using first five features
 set.seed(103)  # for reproducibility
-shap_3 <- explain(mars, feature_names = names(X)[1L:5L], X = X, 
+shap_3 <- explain(fit, feature_names = names(X)[1L:5L], X = X, 
                   pred_wrapper = pfun, nsim = 1, 
                   newdata = X[1L, , drop = FALSE])
 
@@ -69,7 +90,7 @@ expect_identical(
 
 # Check approximate Shapley values for a single feature
 set.seed(104)
-shap_single <- explain(mars, feature_names = "x.3", X = X, pred_wrapper = pfun)
+shap_single <- explain(fit, feature_names = "x3", X = X, pred_wrapper = pfun)
 
 # Check dimensions
 expect_identical(
@@ -80,7 +101,7 @@ expect_identical(
 # Check column names
 expect_identical(
   current = names(shap_single),
-  target = "x.3"
+  target = "x3"
 )
 
 # Check class 
@@ -97,6 +118,9 @@ p1 <- autoplot(shap_all)
 p2 <- autoplot(shap_all, num_features = 3)
 
 # Expectations
+expect_warning(
+  autoplot(shap_all, num_features = 0)
+)
 expect_identical(
   current = class(p1),
   target = c("gg", "ggplot")
@@ -114,14 +138,18 @@ expect_identical(
   target = c(3L, 2L)
 )
 
+
 # Check Shapley-based dependence plot -----------------------------------------
 
 # Construct Shapley-based idependence plots
-p3 <- autoplot(shap_all, type = "dependence", feature = "x.1", X = X, 
-               color_by = "x.2", smooth = TRUE)
+p3 <- autoplot(shap_all, type = "dependence", feature = "x1", X = X, 
+               color_by = "x2", smooth = TRUE)
 p4 <- autoplot(shap_all, type = "dependence", X = X)
 
 # Expectations
+expect_error(  # missing `X`
+  autoplot(shap_all, type = "dependence")
+)
 expect_identical(
   current = class(p3),
   target = c("gg", "ggplot")
@@ -140,8 +168,9 @@ expect_identical(
 )
 expect_identical(
   current = p4$data$x,
-  target = X$x.1
+  target = X$x1
 )
+
 
 # Check Shapley-based contribution plot ---------------------------------------
 

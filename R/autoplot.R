@@ -50,7 +50,7 @@
 #' plot the explanation when \code{type = "contribution"}. If \code{NULL} (the 
 #' default) the explanation for the first row/instance will be used.
 #' 
-#' @param ... Additional optional arguments to be passed onto 
+#' @param ... Additional optional arguments to be passed on to 
 #' \code{\link[ggplot2]{geom_col}} (if \code{type = "importance"}) or 
 #' \code{\link[ggplot2]{geom_point}} (if \code{type = "dependence"}).
 #' 
@@ -59,7 +59,7 @@
 #' 
 #' @importFrom ggplot2 aes_string autoplot coord_flip geom_col geom_point
 #' 
-#' @importFrom ggplot2 geom_smooth ggplot xlab ylab
+#' @importFrom ggplot2 geom_smooth ggplot guides xlab ylab
 #' 
 #' @importFrom stats reorder
 #'
@@ -191,8 +191,9 @@ autoplot.explain <- function(
       geom_col(...) +
       coord_flip() +
       xlab("") +
-      ylab("Shapley value")
-    
+      ylab("Shapley value") +
+      guides(fill = FALSE, color = FALSE)
+
   }
   
   # Return plot
