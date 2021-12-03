@@ -36,6 +36,9 @@ bin <- function(x, n_bins) {
 #'
 #' @param seed Integer specifying the random seed. If \code{NULL} (the default)
 #' the results will be different each time the function is run.
+#' 
+#' @returns A data frame of simulated observations from the Friedman 1 benchmark 
+#' problem.
 #'
 #' @note This function is mostly used for internal testing.
 #' 

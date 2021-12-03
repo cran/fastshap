@@ -45,7 +45,19 @@ Features pushing the prediction higher are shown in red, while those pushing
 the prediction lower are shown in blue.
 }
 \note{
-It should be noted that only exact Shapley explanations (i.e., calling 
+This function requires additional software to work. In particular,
+users will need to make sure they have the following software installed:
+\itemize{
+
+  \item \href{https://www.python.org/}{Python} (>3.6);
+  
+  \item \href{https://github.com/slundberg/shap}{shap} (preferably >=0.36.0).
+  
+}
+The \href{https://rstudio.github.io/reticulate/}{reticulate} package can be 
+used to help make sure you're set up properly with the above dependencies.
+
+It should also be noted that only exact Shapley explanations (i.e., calling 
 \code{fastshap::explain()} with \code{exact = TRUE}) satisfy the so-called 
 \emph{additivity property} where the sum of the feature contributions for 
 \emph{x} must add up to the difference between the corresponding prediction 

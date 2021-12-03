@@ -26,7 +26,19 @@
 #' Features pushing the prediction higher are shown in red, while those pushing 
 #' the prediction lower are shown in blue.
 #' 
-#' @note It should be noted that only exact Shapley explanations (i.e., calling 
+#' @note This function requires additional software to work. In particular,
+#' users will need to make sure they have the following software installed:
+#' \itemize{
+#' 
+#'   \item \href{https://www.python.org/}{Python} (>3.6);
+#'   
+#'   \item \href{https://github.com/slundberg/shap}{shap} (preferably >=0.36.0).
+#'   
+#' }
+#' The \href{https://rstudio.github.io/reticulate/}{reticulate} package can be 
+#' used to help make sure you're set up properly with the above dependencies.
+#' 
+#' It should also be noted that only exact Shapley explanations (i.e., calling 
 #' \code{fastshap::explain()} with \code{exact = TRUE}) satisfy the so-called 
 #' \emph{additivity property} where the sum of the feature contributions for 
 #' \emph{x} must add up to the difference between the corresponding prediction 
@@ -90,7 +102,7 @@ force_plot.explain <- function(object, baseline = NULL, feature_values = NULL,
   }
   
   # # Check dimension of explanations (for now, only a single row is allowed)
-  # if (nrow(ex) != 1) {
+  # if (nrow(object) != 1) {
   #   stop("Currently, only a single explanation is allowed to be plotted.",
   #        call. = FALSE)
   # }
@@ -121,9 +133,18 @@ force_plot.explain <- function(object, baseline = NULL, feature_values = NULL,
   )
 
   # Display results
+  # FIXME: Is this the best way to determine/compare Python package versions?
+  shap_version <- reticulate::py_get_attr(shap, name = "__version__")
+  shap_version <- package_version(as.character(shap_version))
+  message("Using shap version ", shap_version, ".")
   tfile <- tempfile(fileext = ".html")
-  shap$save_html(tfile, plot_html = fp)
+  if (shap_version < "0.36.0") {
+    shap$save_html(tfile, plot_html = fp)
+  } else {
+    shap$save_html(tfile, plot = fp)
+  }
   display <- match.arg(display)
+  
   # Check for dependencies
   if (display == "viewer") {
     if (requireNamespace("rstudioapi", quietly = TRUE)) {

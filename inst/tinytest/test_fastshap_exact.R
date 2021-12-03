@@ -5,6 +5,9 @@ if (!requireNamespace("ggplot2", quietly = TRUE)) {
 if (!requireNamespace("xgboost", quietly = TRUE)) {
   exit_file("Package xgboost missing")
 }
+if (!requireNamespace("lightgbm", quietly = TRUE)) {
+  exit_file("Package lightgbm missing")
+}
 
 # Load required packages
 suppressMessages({
@@ -52,6 +55,9 @@ expect_identical(
   target = c("tbl_df", "tbl", "data.frame", "explain")
 )
 
+
+# Package: xgboost -------------------------------------------------------------
+
 # Fit model(s)
 set.seed(111)
 fit_xgb <- xgboost::xgboost(  # params found using `autoxgb::autoxgb()`
@@ -71,7 +77,56 @@ ex_apprx <- explain(fit_xgb, X = data.matrix(X), newdata = x, adjust = TRUE,
                     pred_wrapper = pfun, nsim = 1000)
 
 # Check accuracy
-expect_true(cor(as.numeric(ex_exact), as.numeric((ex_apprx))) > 0.999)
+expect_true(cor(as.numeric(ex_exact), as.numeric((ex_apprx))) > 0.99)
+
+# Check dimensions
+expect_identical(
+  current = dim(ex_exact),
+  target = dim(ex_apprx)
+)
+
+# Check column names
+expect_identical(
+  current = names(ex_exact),
+  target = colnames(X)
+)
+
+# Check class 
+expect_identical(
+  current = class(ex_exact),
+  target = c("tbl_df", "tbl", "data.frame", "explain")
+)
+
+
+# Package: lightgbm ------------------------------------------------------------
+
+# Fit a basic lightgbm model
+set.seed(753)
+fit_lgb <- lightgbm:::lightgbm(  # params found using `autoxgb::autoxgb()`
+  data = data.matrix(subset(trn, select = -y)),
+  label = trn$y,
+  nrounds = 301,
+  verbose = -1,
+  params = list(
+    max_depth = 3,
+    eta = 0.1,
+    objective = "regression"
+  )
+)
+
+# Prediction wrapper
+pfun.lgb <- function(object, newdata) {
+  predict(object, data = newdata)
+}
+
+# Generate exact and approximate Shapley values for entire training set
+ex_exact <- explain(fit_lgb, X = x, exact = TRUE)
+set.seed(758)
+ex_apprx <- explain(fit_lgb, X = data.matrix(X), newdata = x, adjust = TRUE,
+                    pred_wrapper = pfun.lgb, nsim = 1000)
+
+# Check accuracy
+expect_true(cor(as.numeric(ex_exact), as.numeric((ex_apprx))) > 0.99)
 
 # Check dimensions
 expect_identical(

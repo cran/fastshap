@@ -29,6 +29,10 @@ where \code{n_bins} gives the number of classes.}
 \item{seed}{Integer specifying the random seed. If \code{NULL} (the default)
 the results will be different each time the function is run.}
 }
+\value{
+A data frame of simulated observations from the Friedman 1 benchmark 
+problem.
+}
 \description{
 Simulate data from the Friedman 1 benchmark problem. These data were 
 originally described in Friedman (1991) and Breiman (1996). For details, see
