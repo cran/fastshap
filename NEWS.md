@@ -1,3 +1,7 @@
+# fastshap 0.0.7
+
+* Move [lightgbm](https://cran.r-project.org/package=lightgbm) tests to `slowtests/` directory (for now).
+
 # fastshap 0.0.6
 
 ## Enhancements
